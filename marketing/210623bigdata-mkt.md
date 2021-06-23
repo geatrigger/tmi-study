@@ -20,9 +20,7 @@ https://youtu.be/ATmq7-WxYdo ``starbucks GIS 960``
 
 
 
-![img](bigdata-mkt.assets/2.png)
-
-커피 구매 패턴과 점포 위치 등 데이터를 엔터프라이즈 데이터 웨어하우스와 통합시켜 수백만개의 레코드와 함께 매일 업데이트 합니다. 그리고 이를 **마케팅 전략에 활용**하는데, 커피 소비량이 많은 지역을 오버레이해 특정 프로모션에 적합한 지역을 찾거나 기상 데이터를 활용해 지역에 맞는 음료를 미리 준비합니다. 예를 들어 다음주 부산이 매우 더울 것으로 예상된다면, 이 지역에 맞는 프로모션을 지오디자인해 고객들이 원할 프라푸치노를 일주일 전에 준비할 수 있습니다.  
+![2](210623bigdata-mkt.assets/2.png)커피 구매 패턴과 점포 위치 등 데이터를 엔터프라이즈 데이터 웨어하우스와 통합시켜 수백만개의 레코드와 함께 매일 업데이트 합니다. 그리고 이를 **마케팅 전략에 활용**하는데, 커피 소비량이 많은 지역을 오버레이해 특정 프로모션에 적합한 지역을 찾거나 기상 데이터를 활용해 지역에 맞는 음료를 미리 준비합니다. 예를 들어 다음주 부산이 매우 더울 것으로 예상된다면, 이 지역에 맞는 프로모션을 지오디자인해 고객들이 원할 프라푸치노를 일주일 전에 준비할 수 있습니다.  
 
 이 밖에도 **주요 행사가 매장에 미치는 영향도 분석**할 수 있습니다. 예를 들어 어느 지역에 퍼레이드, 불꽃놀이 같은 큰 행사가 있어 만 명이 넘는 사람들이 참가한다면, 스타벅스는 미리 스텝 충원과 재고 관리를 통해 고객에게 최상의 경험을 제공합니다.
 
@@ -34,11 +32,11 @@ https://youtu.be/ATmq7-WxYdo ``starbucks GIS 960``
 
 - ### 빅데이터를 이용한 재고관리
 
-![img](bigdata-mkt.assets/그림3.png)
 
 
+![그림3](210623bigdata-mkt.assets/그림3.png)
 
-![img](bigdata-mkt.assets/그림5.png)
+![그림5](210623bigdata-mkt.assets/그림5.png)
 
 데이터는 POS 기기, 온라인 판매, 소비자 설문조사, PDA 기기, 옷에 부착된 RFID 등을 통해 수집된다. 매장 직원들은 매장에 투입되기 전에 PDA 기기를 활용하여 단추, 지퍼, 색상, 재단 등 옷의 세부 사항에 대한 소비자의 선호를 기록하도록 훈련받는다. 직원들이 밤마다 PDA에 고객 선호에 대한 피드백을 PDA에 입력하면, 지역 매니저는 자신이 담당하는 지역의 고객 선호 자료를 따로 분리한다. 자라는 판매하는 모든 옷에 RFID 태그를 부착한다.
 
@@ -60,10 +58,13 @@ https://youtu.be/ATmq7-WxYdo ``starbucks GIS 960``
 
 
 
-<img src="bigdata-mkt.assets/R800x0" alt="아마존이 두렵지 않은 이유" style="zoom: 150%;" />
+
+
+<img src="210623bigdata-mkt.assets/12151_15389_1530_v150.jpg" alt="12151_15389_1530_v150" style="zoom: 200%;" />
 
 
 
 
 
-<img src="bigdata-mkt.assets/jhypM2-AApoz3aKa2RubNAkActpsyjD_CuEsJkhNNGsI7-UQK8ObuaMS-UUmxwE7oYAN1gUugxNWzM1NSCUaxuDL5yjw943sPTVRLXIeIGETFQEmQseobBCOwSaRSxu0zpI3hyhOmjzL-tMLF-1n56IuvI1OiwTg2b00" alt="Amazon, 예측 배송(Anticipatory Shipping) 특허 획득…제품 구매 전에 미리 배송 | TrendSpectrum" style="zoom:150%;" />
+![43082_50797_90](210623bigdata-mkt.assets/43082_50797_90.jpg)
+
