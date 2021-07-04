@@ -1,0 +1,29 @@
+version: "3"
+services:
+  mysql:
+    image: "mysql:5"
+    container_name: mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=testdb
+    networks:
+      - mysql-python
+  python3:
+    build: ./python
+    container_name: python3
+    volumes:
+      - C:\study\docker_storage\python:/usr/src
+    networks:
+      - mysql-python
+    entrypoint: ./wait-for-it.sh mysql:3306 --timeout=15 -- python test.py
+
+networks:
+  mysql-python:
+
+volumes:
+  mysql-data:
+    external: true
