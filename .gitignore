@@ -1,2 +1,3 @@
 .DS_Store
 /Hadoop/210714HadoopCode/hadoop/base/*.gz
+/Hadoop/210714HadoopCode/hadoop/namenode/large_word.txt

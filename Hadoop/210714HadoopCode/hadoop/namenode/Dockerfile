@@ -15,6 +15,10 @@ VOLUME ${HADOOP_HOME}/dfs/name
 ADD start.sh /root/start.sh
 RUN chmod a+x /root/start.sh
 
+ADD word.txt /root/word.txt
+ADD large_word.txt /root/large_word.txt
+ADD WordCount.java /root/WordCount.java
+
 # NameNode의 HTTP, IPC 포트 노출
 EXPOSE 9870 9000
 

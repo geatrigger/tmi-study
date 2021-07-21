@@ -9,8 +9,8 @@ if [ "$(ls -A $NAME_DIR)" ]; then
   echo "NameNode is already formatted."
 # 비어있다면 포맷을 진행
 else
-  echo "Format NameNode."
-  $HADOOP_HOME/bin/hdfs --config $HADOOP_HOME/etc/hadoop namenode -format
+  echo "Format NameNode.(not format test)"
+  # $HADOOP_HOME/bin/hdfs --config $HADOOP_HOME/etc/hadoop namenode -format
 fi
 
 # NameNode 기동
