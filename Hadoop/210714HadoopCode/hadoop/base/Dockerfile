@@ -106,6 +106,8 @@ COPY hadoop-3.3.1.tar.gz /root/hadoop-3.3.1.tar.gz
 RUN tar xzf hadoop-3.3.1.tar.gz
 RUN mv hadoop-3.3.1 hadoop
 ENV HADOOP_HOME /root/hadoop
+ENV HADOOP_CLASSPATH="${JAVA_HOME}/lib/tools.jar"
+ENV PATH="${HADOOP_HOME}/bin:${PATH}"
 ADD core-site.xml ${HADOOP_HOME}/etc/hadoop/
 # RUN apt-get -q install ssh
 # RUN echo -e 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64\n' >> $HADOOP_HOME/etc/hadoop/hadoop-env.sh
