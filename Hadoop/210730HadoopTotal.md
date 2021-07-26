@@ -125,7 +125,181 @@
 * 하둡 daemon의 설정
 
   * etc/hadoop/core-site.xml
+    
+    * 기본 설정
+      
     * fs.defaultFS
+    
+      * 기본 파일시스템 설정
+    
+      * NameNode URI를 넣음
+    
+        ![image-20210726155114930](210730HadoopTotal.assets/image-20210726155114930.png)
+    
     * io.file.buffer.size
-  * etc/hadoop/hdfs-site.xml
+    
+  * etc/hadoop/hdfs-site.xml(NameNode)
+  
+    * dfs.namenode.name.dir
+  
+      * namespace와 transation log들이 저장되는 local filesystem에서의 경로지정
+  
+      * comma로 구분되어 여러 경로값을 넣어주면 여러 곳에 복제가되어 저장된다
+  
+        ![image-20210726155615934](210730HadoopTotal.assets/image-20210726155615934.png)
+  
+    * dfs.hosts / dfs.hosts.exclude
+  
+      * 허가하거나 제외할 DataNode설정
+  
+    * dfs.blocksize
+  
+      * HDFS blocksize지정
+  
+      * 보통은 128MB이지만 여기선 원리파악을 위해 10MB단위로 설정
+  
+        ![image-20210726155749349](210730HadoopTotal.assets/image-20210726155749349.png)
+  
+    * dfs.namenode.handler.count
+  
+      * 데이터노드가 많을 때, RPC를 처리하기 위해 NameNode server thread 수를 지정할 수 있는 설정
+  
+  * etc/hadoop/hdfs-site.xml(DataNode)
+  
+    * dfs.datanode.data.dir
+  
+      * block들을 실제로 저장하는 local filesystem에서의 경로지정
+  
+      * comma로 구분되어 여러 경로값을 넣어주면 여러 곳에 복제가되어 저장된다
+  
+        ![image-20210726160446024](210730HadoopTotal.assets/image-20210726160446024.png)
+  
+  * etc/hadoop/yarn-site.xml(ResourceManager and NodeManager)
+  
+    * yarn.acl.enable
+    * yarn.admin.acl
+    * yarn.log-aggregation-enable
+  
+  * etc/hadoop/yarn-site.xml(ResourceManager)
+  
+    * yarn.resourcemanager.address
+      * client가 job을 제출하는 URI(host:port)
+    * yarn.resourcemanager.scheduler.address
+      * ApplicationMaster들이 자원을 Scheduler에게 요청하는 URI(host:port)
+    * yarn.resourcemanager.resource-tracker.address
+      * NodeManager의 URI(host:port)
+    * yarn.resourcemanager.webapp.address
+      * web-ui의 URI(host:port)
+    * yarn.resourcemanager.hostname
+      * ResourceManager host이름
+      * 모든 yarn.resourcemanager주소에 사용됨
+    * yarn.resourcemanager.scheduler.class
+      * Scheduler class
+      * 예시
+        * org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler
+    * yarn.scheduler.minimum-allocation-mb, yarn.scheduler.maximum-allocation-mb
+      * 각각의 컨테이너에 할당할 수 있는 최소/최대 메모리제한(MB단위)
+    * yarn.resourcemanager.nodes.include-path / yarn.resourcemanager.nodes.exclude-path
+      * 허가하거나 제외할 NodeManger 설정
+  
+  * etc/hadoop/yarn-site.xml(NodeManager)
+  
+    * yarn.nodemanager.resource.memory-mb
+      * NodeManager가 사용가능한 총 메모리양 정의
+    * yarn.nodemanager.vmem-pmem-ratio
+      * virtual memory가 physical memory를 초과하여서 쓸 때, 최대비율 설정
+    * yarn.nodemanager.local-dirs
+      * 작업 중간에 생기는 데이터를 저장하는 곳
+      * 여러 경로가 있으면 disk I/O를 골고루 쓸 수 있는 이점이 있음
+    * yarn.nodemanager.log-dirs
+      * log저장 경로
+      * 여러 경로가 있으면 disk I/O를 골고루 쓸 수 있는 이점이 있음
+    * yarn.nodemanager.log.retain-seconds
+      * 로그집계가 불가능할 때, NodeManager에서 log 파일들을 유지할 수 있는 시간 설정(초)
+    * yarn.nodemanager.remote-app-log-dir
+      * 로그집계가 가능할 때, application이 끝나고 log가 보관되는 원격 HDFS directory설정
+      * /logs
+    * yarn.nodemanager.remote-app-log-dir-suffix
+      * 로그집계가 가능할 때, 원격 log directory에 붙는 접미사
+    * yarn.nodemanager.aux-services
+      * Map Reduce application들에 필요한 shuffle service 설정
+    * yarn.nodemanager.env-whitelist
+      * NodeManager에서 컨테이너가 상속할 환경 변수 설정
+  
+  * etc/hadoop/mapred-site.xml(MapReduce Application)
+  
+    * mapreduce.framework.name
+      * 실행 프레임워크 설정
+      * yarn으로 설정시 hadoop YARN사용
+    * mapreduce.map.memory.mb
+      * map들의 리소스 사용 제한값 설정
+      * 1536
+    * mapreduce.map.java.opts
+      * map들의 자식 jvm들의 heap-size 설정
+      * -Xmx1024M
+    * mapreduce.reduce.memory.mb
+      * reduce들의 리소스 사용 제한값 설정
+      * 3072
+    * mapreduce.reduce.java.opts
+      *  reduce들의 자식 jvm들의 heap-size 설정
+      * -Xmx2560M
+    * mapreduce.task.io.sort.mb
+      * 정렬 때 효율을 위해 설정해놓는 최대 메모리 사용량 설정
+      * 512
+    * mapreduce.task.io.sort.factor
+      * 파일들을 정렬할 때 한번에 병합하는 stream수
+      * 100
+    * mapreduce.reduce.shuffle.parallelcopies
+      * reduce들에 의해 실행되고, 많은 map들을 fetch하기 위해 실행되는 병렬 복제본의 개수
+      * 50
+  
+  * etc/hadoop/mapred-site.xml(MapReduce JobHistory Server)
+  
+    * mapreduce.jobhistory.address
+      * MapReduce JobHistory Server URI(host:port)
+    * mapreduce.jobhistory.webapp.address
+      * MapReduce JobHistory Server Web UI  URI(host:port)
+    * mapreduce.jobhistory.intermediate-done-dir
+      * MapReduce job history 파일들 위치
+      * /mr-history/tmp
+    * mapreduce.jobhistory.done-dir
+      * JobHistory Server가 관리하는 history 파일들 위치
+      * /mr-history/done
+  
+  * etc/hadoop/yarn-site.xml(NodeManager)
+  
+    * yarn.nodemanager.health-checker.script.path
+      * Node health script 위치
+    * yarn.nodemanager.health-checker.script.opts
+      * Node health script options
+    * yarn.nodemanager.health-checker.interval-ms
+      * Node health script 신호간격
+    * yarn.nodemanager.health-checker.script.timeout-ms
+      * Node health script 신호간격 마지노선
+  
+* 설정들 요약
 
+  * xml 형식으로 저장
+  * log, namespace, block등을 저장할 경로를 적는 세팅이 많았음
+  * 각 서비스와 통신할 host:port를 지정하는 세팅이 많았음
+  * 분산 처리 시스템의 특성상 각각의 node manager, job history server에서 통합되기 전의 log위치, 통합된 후의 log위치 둘 다 지정해 줘야 한다
+  * 메모리를 얼마나 할당하느냐라는 숫자 세팅도 있었음
+  * Monitoring Health of NodeManagers
+    * node가 healthy한지 확인하기 위해 NodeManager가 주기적으로 health check script를 실행시켜 상태가 안좋은 node를 발견하면(상태가 안좋은 disk의 개수가 일정개수 이상 등) ResourceManager가 해당 노드를 black-list화한다.
+  * Slaves File
+    * etc/hadoop/workers에 라인마다 worker hostname이나 IP주소를 쓰면, Helper script가 해당 host들에게 한꺼번에 명령을 실행시킬 수 있다.(단, passphraseless ssh, Kerberos등 ssh trust가 이미 갖춰져야한다)
+  * Hadoop Rack Awareness
+    * 하둡 컴포넌트들은 rack정보를 알면 성능면이나 안전면에서 네트워크의 장점을 활용할 수 있으므로 HDFS를 실행하기 전에 rack awareness를 설정하는 것이 좋다
+  * Logging
+    * logging framework로 Apache log4j를 사용하고 etc/hadoop/log4j.properties파일로 logging 설정을 할 수 있다
+  * Cluster를 실행할 때 해당 설정 파일들을 모든 머신의 HADOOP_CONF_DIR 디렉토리에 배포한다
+
+# 그동안 실행해왔던 것은
+
+* NameNode와 DataNode는 있지만 ResoureManager, MapReduce JobHistory Server는 따로 세팅이 안되어 있음
+  * yarn에 대해서 제대로 배워야 세팅가능할 듯
+
+# HDFS
+
+* https://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html
+* 
