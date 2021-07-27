@@ -302,4 +302,57 @@
 # HDFS
 
 * https://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html
-* 
+
+* 하둡의 목표
+
+  * Hardware Failure
+    * 수많은 서버에서 hardware failure는 자주 있는 일이므로 그걸 빨리 발견하고 회복을 하는 것
+  * Streaming Data Access
+    * batch processing에 적합하여 지연속도에 신경쓰는 것보다 처리량에 신경을 썼다
+  * Large Data Sets
+    * Terabyte 단위인 파일 한개를 저장할 수 있도록 지원한다
+  * Simple Coherency Model
+    * write-onece-read-many access model
+    * appending, truncate는 지원하지만 바로 update되진 않는다
+    * 따라서 coherency문제(통일)도 해결하고 높은 처리량을 가능하게 한다
+    * MapReduce나 web crawler같은 어플리케이션에 적합하다
+  * “Moving Computation is Cheaper than Moving Data”
+    * 데이터를 이용해 계산할 일이 있을 때 데이터가 너무 크면 데이터 이동하는 비용이 너무크다
+    * HDFS는 데이터 가까이서 application이 실행할 수 있도록 만드는 인터페이스가 있다
+  * Portability Across Heterogeneous Hardware and Software Platforms
+    * 다른 플랫폼으로 쉽게 이동할 수 있다(많은 플랫폼 환경 지원)
+
+* NameNode와 DataNode
+
+  * HDFS는 Java로 이용해 만들어진 소프트웨어이므로 Java를 지원하는 모든 기계에서 NameNode, DataNode가 실행가능하다
+
+  * NameNode
+
+    * HDFS의 namespace 관리
+      * 관습적으로 사용되는 계층 구조로 되어 있다
+      * user quotas, access permissions 지원
+      * hard link, soft link는 지원 안함(누군가가 구현하면 차용하겠지만, 현재 지원안함)
+      * 데이터의 무결성을 보장하기 위해 namespace에 각 block에 대한 checksum을 저장한다.
+    * 클라이언트의 파일 접근 관리
+    * replication factor가 보관되어 있다
+    * Replication Placement
+      * Hadoop Rack Awareness를 이용해 DataNode가 어느 rack id에 속한지 결정한다
+      * replica들을 모두 다른 rack에 두면 rack간의 이동비용이 크기 때문에 write의 비용이 증가해서 선호하지 않는다.
+      * 안정성과 성능을 위해, replication factor가 3일때, 각각의 replica들은 local machine(write가 있는 곳), 같은 rack에 속한 다른 임의의 DataNode, 다른 rack에 속한 DataNode에 저장된다(data reliability와 read 성능을 줄이지 않음)
+      * replication factor가 3이 넘어가면 그 이후 replica의 저장 위치는 랜덤이다(단, rack당 replica개수가 (replicas - 1) / racks + 2를 넘지 말아야 한다)
+      * 최대 replica개수는 DataNode의 개수와 같다(같은 DataNode에 replica를 두지 않기 때문)
+    * Replica Selection
+      * global bandwidth 소모와 read latency를 줄이기 위해서, HDFS는 reader입장에서 가장 가까운 replica 하나만 읽는다
+    * Re-Replication
+      * DataNode가 사용불가능해지거나, replica가 망가지거나, DataNode에 있는 hard dick가 망가지거나, replication factor가 늘어나면 수행한다.
+      * DataNode가 죽었다고 판단하는 것은 신호가 안오기 시작한지 기본적으로 replication storm을 피하기 위해 10분 뒤에 한다. 이 간격을 짧게 설정할 수 있다
+    * FsImage, EditLog등의 메타데이터가 망가지면 안되기 때문에 해당 메타데이터들을 복제본을 만들어서 저장한다. FsImage, EditLog는 동기적으로 업데이트 된다. NameNode가 재시작하면 가장 최근에 일치하는 FsImage, EditLog가 사용된다.
+
+  * DataNode
+
+    * NameNode가 지정해준 블록 저장, 삭제, 복제
+
+    * 주기적으로 Heartbeat(정상작동중이라는 신호)와 Blockreport(해당 DataNode의 모든 블록정보)를 NameNode에 보낸다
+
+      ![HDFS DataNodes](210730HadoopTotal.assets/hdfsdatanodes.png)
+
