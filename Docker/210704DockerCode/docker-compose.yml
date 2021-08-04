@@ -16,7 +16,7 @@ services:
     build: ./python
     container_name: python3
     volumes:
-      - C:\study\docker_storage\python:/usr/src
+      - C:\Users\js711\Documents\tmi-study\Docker\210704DockerCode\python:/usr/src
     networks:
       - mysql-python
     entrypoint: ./wait-for-it.sh mysql:3306 --timeout=15 -- python test.py
@@ -26,4 +26,3 @@ networks:
 
 volumes:
   mysql-data:
-    external: true
