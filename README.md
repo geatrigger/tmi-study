@@ -36,6 +36,13 @@
       * Content-based filtering 모델을 간단하게 만들어보았고 Neo4j의 장점인 노드와 노드 사이의 연결을 그래프로 직관적이게 시각화 수행함. 
       * 다른 Nosql과 비교했을 때는 아직까지는 시각화의 장점만 보임.
     * 김현용 : RDBMS와 비교한 MongoDB의 기본개념 정리.  MongoDB 환경설정 및 CRUD 데이터핸들링
+* 7주차(2021-08-04)
+  * 발표 주제
+    * 김예지 : style.grass이용해 그래프 스타일 설정 변경/ Similarity Metrics(Cosine,Pearson similarity)을 이용한 쿼리문으로 추천영화 예제
+    * 김기찬 : kafka와 spark의 차이, kafka 실행 예제
+    * 김현용 : docker container를 이용한 MongoDB 샤딩 환경 세팅
+  * 새로운 멤버 합류
+  * 발표시간은 20분으로 줄이기
 
 # 스터디 진행 방향
 
