@@ -1,0 +1,59 @@
+version: "3"
+services:
+  kafka:
+    image: "bitnami/kafka:latest"
+    container_name: kafka
+    # volumes:
+    #   - kafka-data:/bitnami/kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment: 
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+    networks:
+      - kafka-system
+    # entrypoint: ./wait-for-it.sh zookeeper:2181 --timeout=15
+  # kafka-client:
+  #   image: "bitnami/kafka:latest"
+  #   container_name: kafka-client
+  #   volumes:
+  #     - kafka-client-data:/bitnami/kafka
+  #   environment: 
+  #     - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
+  #   networks:
+  #     - kafka-system
+  zookeeper:
+    image: "bitnami/zookeeper:latest"
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment: 
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - kafka-system
+    # entrypoint: bin/zookeeper-server-start.sh config/zookeeper.properties
+
+  mysql:
+    image: "mysql:5"
+    container_name: mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=testdb
+    networks:
+      - kafka-system
+networks:
+  kafka-system:
+
+volumes:
+  mysql-data:
+  kafka-data:
+  # kafka-client-data:
