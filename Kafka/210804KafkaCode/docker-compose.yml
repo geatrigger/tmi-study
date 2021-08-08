@@ -1,32 +1,60 @@
 version: "3"
+
+x-kafka_base: &kafka_base
+  image: "bitnami/kafka:latest"
+  # environment: 
+    # - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+    # - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+  networks:
+    - kafka-system
+
 services:
-  kafka:
-    image: "bitnami/kafka:latest"
-    container_name: kafka
+  kafka01:
+    <<: *kafka_base
+    container_name: kafka01
+    ports:
+      - "9093:9093"
     # volumes:
     #   - kafka-data:/bitnami/kafka
-    ports:
-      - "9092:9092"
-      - "9093:9093"
+    # entrypoint: ./wait-for-it.sh zookeeper:2181 --timeout=15
     environment: 
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
-    networks:
-      - kafka-system
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka01:9092,EXTERNAL://localhost:9093
+  kafka02:
+    <<: *kafka_base
+    container_name: kafka02
+    ports:
+      - "9094:9094"
+    # volumes:
+    #   - kafka-data:/bitnami/kafka
     # entrypoint: ./wait-for-it.sh zookeeper:2181 --timeout=15
-  # kafka-client:
-  #   image: "bitnami/kafka:latest"
-  #   container_name: kafka-client
-  #   volumes:
-  #     - kafka-client-data:/bitnami/kafka
+    environment: 
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9094
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_BROKER_ID=2
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka02:9092,EXTERNAL://localhost:9094
+  # kafka03:
+  #   <<: *kafka_base
+  #   container_name: kafka03
+  #   # volumes:
+  #   #   - kafka-data:/bitnami/kafka
+  #   # entrypoint: ./wait-for-it.sh zookeeper:2181 --timeout=15
   #   environment: 
-  #     - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
-  #   networks:
-  #     - kafka-system
+  #     - ALLOW_PLAINTEXT_LISTENER=yes
+  #     - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+  #     - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+  #     - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+  #     - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+  #     - KAFKA_BROKER_ID=3
+  #     - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka03:9092,EXTERNAL://localhost:9093
   zookeeper:
     image: "bitnami/zookeeper:latest"
     container_name: zookeeper
