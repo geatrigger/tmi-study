@@ -9,7 +9,7 @@ Neo4j 내부 GraphApps 소개
 CALL db.schema.visualization()
 ```
 
-![graph](210807_08_Neo4jBloom.assets/graph-8387185.png)
+![graph-8387185](210808_08_Neo4jGraphApps.assets/graph-8387185.png)
 
 ## Neo4j Bloom
 
@@ -24,21 +24,25 @@ CALL db.schema.visualization()
 
 * 주요 기능
 
-  <img src="210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 12.32.42 PM.png" alt="Screenshot 2021-08-08 at 12.32.42 PM" style="zoom:50%;" />
+  
 
-  <img src="210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 12.33.41 PM.png" alt="Screenshot 2021-08-08 at 12.33.41 PM" style="zoom:50%;" />
+  ![Screenshot 2021-08-08 at 12.32.42 PM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 12.32.42 PM.png)
+
+  
+
+  ![Screenshot 2021-08-08 at 12.33.41 PM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 12.33.41 PM.png)
 
   `Brewery of Pumpkin Ale`
 
   
 
-  <img src="210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 12.36.50 PM.png" alt="Screenshot 2021-08-08 at 12.36.50 PM" style="zoom:50%;" />
+  ![Screenshot 2021-08-08 at 12.36.50 PM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 12.36.50 PM.png)
 
   `Beer of Brewery of Pumpkin Ale`
 
-  <img src="210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 12.38.35 PM.png" alt="Screenshot 2021-08-08 at 12.38.35 PM" style="zoom:50%;" />
-
   
+
+  ![Screenshot 2021-08-08 at 12.38.35 PM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 12.38.35 PM.png)
 
   
 
@@ -54,7 +58,11 @@ CALL db.schema.visualization()
 
   `beer1 21A IPA and beer2 Porter`
 
-  ![Screenshot 2021-08-08 at 12.53.36 PM](210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 12.53.36 PM.png)
+  
+
+  ![Screenshot 2021-08-08 at 12.53.36 PM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 12.53.36 PM.png)
+
+  
 
   ```cypher
   MATCH r=(c:Category)<-[:BEER_CATEGORY]-(b:Beer)-[:BREWED_AT]->(br:Brewery) WHERE
@@ -63,13 +71,14 @@ CALL db.schema.visualization()
   RETURN r
   ```
 
-  ![Screenshot 2021-08-08 at 10.59.37 AM](210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 10.59.37 AM.png)
+  
+
+  ![Screenshot 2021-08-08 at 10.59.37 AM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 10.59.37 AM.png)
 
   * rule-based styling
-
     * ABV (alcohol by volume) > 8.0 
 
-    ![Screenshot 2021-08-08 at 11.14.46 AM](210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 11.14.46 AM.png)
+![Screenshot 2021-08-08 at 11.14.46 AM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 11.14.46 AM.png)
 
 ## Neo4j Dash
 
@@ -93,7 +102,11 @@ Type : Map Box를 이용하여 지도 시각화
 
 * Node의 Property에 위도 경도가 있다면 자동으로 선택해 지도 생성
 
-![Screenshot 2021-08-08 at 11.33.35 AM](210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 11.33.35 AM.png)
+
+
+![Screenshot 2021-08-08 at 11.33.35 AM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 11.33.35 AM.png)
+
+
 
 Type : Line chart
 
@@ -105,5 +118,5 @@ COUNT(country)as num_coun
 RETURN *
 ```
 
-<img src="210807_08_Neo4jBloom.assets/Screenshot 2021-08-08 at 12.22.47 PM.png" alt="Screenshot 2021-08-08 at 12.22.47 PM" style="zoom:50%;" />
+![Screenshot 2021-08-08 at 12.22.47 PM](210808_08_Neo4jGraphApps.assets/Screenshot 2021-08-08 at 12.22.47 PM.png)
 
