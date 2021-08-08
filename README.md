@@ -43,6 +43,12 @@
     * 김현용 : docker container를 이용한 MongoDB 샤딩 환경 세팅
   * 새로운 멤버 합류
   * 발표시간은 20분으로 줄이기
+* 8주차(2021-08-08)
+  * 발표 주제
+    * 김예지 : Neo4j 내부 graph application인 Neo4j Bloom과 Neo4j Dash 소개
+    * 김기찬 : kafka cluster 구축 및 기능 테스트
+    * 김현용 : ip주소, port번호, protocol 기본 정리
+    * 장현석 : ELK 설명& ELK 구성 및 원격서버 파일비트 설치후 테스트
 
 # 스터디 진행 방향
 
