@@ -94,7 +94,7 @@ services:
     environment:
       - node.name=es03
       - cluster.name=es-docker-cluster
-		ulimits:
+    ulimits:
       memlock:
         soft: -1
         hard: -1
