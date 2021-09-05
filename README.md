@@ -49,6 +49,23 @@
     * 김기찬 : kafka cluster 구축 및 기능 테스트
     * 김현용 : ip주소, port번호, protocol 기본 정리
     * 장현석 : ELK 설명& ELK 구성 및 원격서버 파일비트 설치후 테스트
+* 9주차(2021-08-18)
+  * 발표 주제
+    * 김예지 : Neo4j에서 ShortestPath 알고리즘 사용 예제와 Neo4j Graph Data Science Library 사용 방법 소개
+    * 김기찬 : SparkStreaming의 사용방법(StreamingContext, SparkSession) 및 적용
+    * 김현용 : Kafka, MongoDB 파이썬 기반 메시지 스트리밍
+    * 장현석 : 메트릭비트란? 간단한 설치와 모니터링 구축
+* 10주차(2021-08-25)
+  * 발표 주제
+    * 김예지 : neo4j를 이용하여 초파리의 뇌지도(Connectome) 구현한 neuPrint 소개
+    * 김기찬 : Java 객체지향이론 및 Spring 튜토리얼
+    * 김현용 : DE 직무 자격요건 및 우대사항 정리
+    * 장현석 : Hadoop, Spark cluster 구성 및 yarn submit 실행 및 spark cluster 구동방식 비교
+* 11주차(2021-09-01)
+  * 발표 주제
+    * 김기찬 : 스마트카 빅데이터 파이프라인 시뮬레이션 방법론 및 버츄얼박스 세팅
+    * 김현용 : Apache Airflow 기본개념정리
+    * 장현석 : 쿠버네티스 설명 & kubeadm 으로 클러스터 구성하기
 
 # 스터디 진행 방향
 
