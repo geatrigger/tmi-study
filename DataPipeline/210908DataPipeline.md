@@ -31,6 +31,10 @@
 
   * bigdata/bigdata
 
+* root
+
+  * root/adminuser
+
 * 고정 ip 설정
 
   * /etc/netplan/00-installer-config.yaml
@@ -154,6 +158,12 @@
 
   * hostnamectl로 이름 바꾸고
   * 재부팅
+  
+* 메모리 할당
+
+  * Server01 : 5120MB
+  * Server02 : 5120MB
+  * Server03 : 3072MB
 
 # 빅데이터 클러스터 구성
 
@@ -178,6 +188,7 @@
     * 해당 cloudera manager로 빅데이터 시스템 자동화 도구에 대해서 파악하고, server01, server02, server03 호스트를 추가하여 작업 진행
     * cloudera manager가 있는 가상머신에서도 /etc/hosts에 server01, server02, server03정보 추가해야함
     * cloudera manager가 있는 가상머신은 처음부터 몇몇포트가 localhost의 같은 포트값으로 포트포워딩 설정이 되어있어서 로컬 컴퓨터(http://localhost:7180/)로 접근 가능
+    * cloudera manager가 있는 가상머신에서 cloudera express를 실행하기 위해 최소 8gb가 필요하다해서 8gb할당(가상머신 4개 전체에 총 21GB할당)
     
   * window 설정
 
@@ -206,3 +217,203 @@
 
       ![image-20210905225309580](210908DataPipeline.assets/image-20210905225309580.png)
 
+  * 빅데이터 기본 소프트웨어 설치
+
+    * 3대의 host에 정해진 소프트웨어 설치
+    
+    * 클러스터 추가
+    
+      ![image-20210906093338319](210908DataPipeline.assets/image-20210906093338319.png)
+    
+    * 호스트 지정
+    
+      * server01.hadoop.com
+        server02.hadoop.com
+        server03.hadoop.com
+    
+      ![image-20210906093437173](210908DataPipeline.assets/image-20210906093437173.png)
+    
+    * CDH 버전 선택
+    
+      * 패키지 사용
+    
+        * Parcel의 경우 배포 및 업그레이드 자동화가 가능하지만, 현재 유료버전에서만 지원하는지 비활성화됨
+    
+      * CDH버전 5의 최신 릴리즈
+    
+        ![image-20210906095737821](210908DataPipeline.assets/image-20210906095737821.png)
+    
+    * 호스트들의 ssh 로그인 정보 입력
+    
+      * 각 호스트의 root 비밀번호가 다 같은 상황이므로 가장 편한 root로 모든 호스트가 동일한 암호 허용 선택
+      * 하지만 ssh로 root접근은 처음부터 막혀있으므로 호스트의 sshd_config 수정
+    
+      ```shell
+      vim /etc/ssh/sshd_config
+      # PermitRootLogin yes
+      # PasswordAuthentication yes (기본 yes라 설정 안해도 됨)
+      # ChallengeResponseAuthentication no(이미 세팅되어 있었음)
+      service sshd reload
+      ```
+    
+    * 실패
+    
+      * cloudera 아카이브에서 CDH를 설치하는 것인데 이젠 아카이브 접속하려면 인증이 필요함
+    
+        ![image-20210906104709181](210908DataPipeline.assets/image-20210906104709181.png)
+  
+
+# cloudera 정형화데이터 튜토리얼
+
+* MySQL -> HDFS
+
+  * sqoop을 이용해 데이터 변환
+
+  * 다른 workload들을 위해 hadoop 최적화된 파일 형태인 avro로 변환
+
+  * 내부적으로 MapReduce를 실행시켜서 MySQL에서 HDFS의 /user/hive/warehouse에 avro파일 형태로 저장한다.
+
+    ```shell
+    sqoop import-all-tables \
+        -m 1 \
+        --connect jdbc:mysql://quickstart:3306/retail_db \
+        --username=retail_dba \
+        --password=cloudera \
+        --compression-codec=snappy \
+        --as-avrodatafile \
+        --warehouse-dir=/user/hive/warehouse
+    ```
+
+  * 스키마의 경우엔 실행시킨 로컬 디렉토리에 avsc파일 형태로 저장되어서 hive, Impala로 쿼리를 실행시키려면 hdfs로 파일을 옮겨야 한다
+
+    ```shell
+    sudo -u hdfs hadoop fs -mkdir /user/examples
+    sudo -u hdfs hadoop fs -chmod +rw /user/examples
+    hadoop fs -copyFromLocal ~/*.avsc /user/examples/
+    ```
+
+    ![image-20210913200623253](210908DataPipeline.assets/image-20210913200623253.png)
+
+* Impala
+
+  * Hue 인터페이스로 Impala 접근
+
+    ![image-20210913200916169](210908DataPipeline.assets/image-20210913200916169.png)
+
+  * 다음 query를 통해 table 생성
+
+    ```sql
+    CREATE EXTERNAL TABLE categories STORED AS AVRO
+    LOCATION 'hdfs:///user/hive/warehouse/categories'
+    TBLPROPERTIES ('avro.schema.url'='hdfs://quickstart/user/examples/sqoop_import_categories.avsc');
+    
+    CREATE EXTERNAL TABLE customers STORED AS AVRO
+    LOCATION 'hdfs:///user/hive/warehouse/customers'
+    TBLPROPERTIES ('avro.schema.url'='hdfs://quickstart/user/examples/sqoop_import_customers.avsc');
+    
+    CREATE EXTERNAL TABLE departments STORED AS AVRO
+    LOCATION 'hdfs:///user/hive/warehouse/departments'
+    TBLPROPERTIES ('avro.schema.url'='hdfs://quickstart/user/examples/sqoop_import_departments.avsc');
+    
+    CREATE EXTERNAL TABLE orders STORED AS AVRO
+    LOCATION 'hdfs:///user/hive/warehouse/orders'
+    TBLPROPERTIES ('avro.schema.url'='hdfs://quickstart/user/examples/sqoop_import_orders.avsc');
+    
+    CREATE EXTERNAL TABLE order_items STORED AS AVRO
+    LOCATION 'hdfs:///user/hive/warehouse/order_items'
+    TBLPROPERTIES ('avro.schema.url'='hdfs://quickstart/user/examples/sqoop_import_order_items.avsc');
+    
+    CREATE EXTERNAL TABLE products STORED AS AVRO
+    LOCATION 'hdfs:///user/hive/warehouse/products'
+    TBLPROPERTIES ('avro.schema.url'='hdfs://quickstart/user/examples/sqoop_import_products.avsc');
+    ```
+
+    ![image-20210913201058508](210908DataPipeline.assets/image-20210913201058508.png)
+
+  * 테이블 확인
+
+    ![image-20210913201157040](210908DataPipeline.assets/image-20210913201157040.png)
+
+  * total revenue값이 가장 큰 top10 상품들 출력
+
+    ```sql
+    -- Most popular product categories
+    select c.category_name, count(order_item_quantity) as count
+    from order_items oi
+    inner join products p on oi.order_item_product_id = p.product_id
+    inner join categories c on c.category_id = p.product_category_id
+    group by c.category_name
+    order by count desc
+    limit 10;
+    ```
+
+    
+
+    ![image-20210913201631729](210908DataPipeline.assets/image-20210913201631729.png)
+
+# cloudera log데이터 튜토리얼
+
+* 1달치 access log data가 /opt/examples/log_data/access.log.2 형태로 저장되어 있음
+
+* Local File System -> HDFS
+
+  * 로그를 HDFS로 옮김
+
+  * original_access_logs로 저장
+
+    ![image-20210913202302362](210908DataPipeline.assets/image-20210913202302362.png)
+
+  * 로그 내용물
+
+    ![image-20210913202932399](210908DataPipeline.assets/image-20210913202932399.png)
+
+* Hive에 쿼리사용
+
+  * Beeline이라는 JDBC client를 이용해 Hive에 쿼리를 날린다
+
+    ```shell
+    beeline -u jdbc:hive2://quickstart:10000/default -n admin -d org.apache.hive.jdbc.HiveDriver
+    ```
+
+  * 쿼리 실행
+
+    ```shell
+    #
+    CREATE EXTERNAL TABLE intermediate_access_logs (
+     ip STRING,
+     date STRING,
+     method STRING,
+     url STRING,
+     http_version STRING,
+     code1 STRING,
+     code2 STRING,
+     dash STRING,
+     user_agent STRING)
+     ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+     WITH SERDEPROPERTIES (
+     'input.regex' = '([^ ]*) - - \\[([^\\]]*)\\] "([^\ ]*) ([^\ ]*) ([^\ ]*)" (\\d*) (\\d*) "([^"]*)" "([^"]*)"',
+     'output.format.string' = "%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s"
+     )
+     LOCATION '/user/hive/warehouse/original_access_logs';
+     #
+     CREATE EXTERNAL TABLE tokenized_access_logs (
+     ip STRING,
+     date STRING,
+     method STRING,
+     url STRING,
+     http_version STRING,
+     code1 STRING,
+     code2 STRING,
+     dash STRING,
+     user_agent STRING)
+     ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+     LOCATION '/user/hive/warehouse/tokenized_access_logs';
+     #
+     ADD JAR /usr/lib/hive/lib/hive-contrib.jar;
+     #
+     INSERT OVERWRITE TABLE tokenized_access_logs SELECT * FROM intermediate_access_logs;
+     #
+     !quit
+    ```
+
+    
