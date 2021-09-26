@@ -74,11 +74,112 @@
     * --conf : spark configuration property
       * KryoSerializer : Java 내장 직렬화보다 훨씬 향상된 서드파티 라이브러리 Kryo, 모든 타입의 객체가 자동적으로 직렬화 되지는 않음
   * HDFS에서 avro파일을 불러온 다음 가장 많이 팔린 물건 top10 구하기
+  
 * Flume, Solr
+  * https://blog.warpmemory.com/6
   * (Python log 수집기 -> ) log -> Flume -> Solr
   * Solr configuration, collection 만들기
   * 학습을 위해 Log Generator 돌리기
     * Python으로 랜덤한 request를 log파일에 append함
   * Flume으로 log파일에 수정사항이 있는지 지속적으로 체크하고, 수정사항이 있으면 Solr 검색 엔진에 보냄
   * Hue GUI를 이용해 Solr 검색 엔진 내용 확인, 대시보드 생성
+  
+* cloudera 비슷한 프로그램
+
+  * hortonworks
+    * https://kyumdoctor.tistory.com/54
+
+* rasbperry pi hadoop cluster
+
+  * https://medium.com/data-waffles/raspberry-pi-hadoop-cluster-guide-2559437d232
+  * https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201614652757357&oCn=JAKO201614652757357&dbt=JAKO&journal=NJOU00557104
+
+# 스마트카 로그 데이터 파이프라인
+
+* 설치프로그램
+
+  * 모든 서버 ubuntu 18.04 LTS
+
+  * 서버별 구성요소들
+
+    ![210920SmartCarLog](210927DataPipeline.assets/210920SmartCarLog.png)
+
+* 계획
+  * Hadoop, YARN, HBase와 같이 공통으로 설치된 요소들은 한 서버에 설치후 복제하여 환경을 갖춘다
+  * 그 외의 요소들은 책에 쓰인 순서대로 설치하고 테스트해본다
+  * 프로그램 중 오픈소스가 아닌 프로그램들은 검색하여 대체 or 생략한다
+
+* Hadoop 설치
+
+  * https://sparkdia.tistory.com/7?category=1101742
+
+  * Hadoop 다운
+
+    * https://hadoop.apache.org/releases.html
+    * Binary download링크로 미러사이트에 들어간다음 다운링크 획득
+
+    ```shell
+    sudo wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz
+    ```
+
+  * OS 그룹, 사용자 추가
+
+    ```shell
+    sudo groupadd -g 10000 hadoop
+    sudo useradd -g hadoop -u 10000 -m hduser # m옵션 없으면 디렉토리 생성안함
+    sudo passwd hduser # 비밀번호 : hduser
+    # group확인은 /etc/group에서
+    # user확인은 /etc/passwd에서
+    ```
+
+  * 홈 디렉토리 생성법
+
+    ```shell
+    sudo mkdir /home/hduser
+    sudo chown hduser.hadoop /home/hduser
+    # 기본 디렉토리 내용물 복사
+    cd /home/hduser
+    sudo cp -r /etc/skel/. .
+    sudo chown -R hduser.hadoop .
+    ```
+
+  * hduser에서 sudo권한부여
+
+    ```shell
+    # /etc/sudoers에 쓰기권한 부여
+    sudo chmod g+w /etc/sudoers
+    # /etc/sudoers에 내용 추가
+    hduser ALL=(ALL) NOPASSWD: ALL
+    # 참고 사용자가 특정 명령만 비밀번호없이 쓰게하는 법
+    # hduser ALL=(ALL) NOPASSWD:/bin/mkdir,/bin/rmdir
+    ```
+
+  * Hadoop 압축풀기
+
+    ```shell
+    # /usr/local/에 압축풀기
+    sudo tar xvzf hadoop-3.3.1.tar.gz -C /usr/local/
+    # 사용자와 그룹 지정
+    sudo chown -R hduser:hadoop /usr/local/hadoop-3.3.1/
+    ```
+
+  * 기본 shell 수정
+
+    * 리눅스 기본 쉘인 /bin/sh에서는 방향키 지원, tab지원 x
+
+    * /bin/bash로 변경
+
+      ```shell
+      chsh
+      ```
+
+  * bashrc 설정
+
+    ```bash
+    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/bin
+    export HADOOP_HOME=/usr/local/hadoop-3.3.1/
+    export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin/:$HADOOP_HOME/sbin
+    ```
+
+    
 
