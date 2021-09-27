@@ -176,10 +176,223 @@
   * bashrc 설정
 
     ```bash
-    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/bin
-    export HADOOP_HOME=/usr/local/hadoop-3.3.1/
-    export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin/:$HADOOP_HOME/sbin
+    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+    export HADOOP_HOME=/usr/local/hadoop-3.3.1
+    export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
     ```
 
-    
+  * etc/hadoop/core-site.xml
+
+    * 기본 파일 시스템 이름 설정
+
+      ```xml
+      <configuration>
+          <property>
+              <name>fs.defaultFS</name>
+              <value>hdfs://server01:9000</value>
+          </property>
+      </configuration>
+      ```
+
+  * 저장할 디렉토리 미리 생성
+
+    ```shell
+    sudo mkdir /data
+    cd /data
+    sudo mkdir namenode
+    sudo mkdir datanode
+    sudo mkdir namesecondary
+    sudo mkdir yarn
+    cd yarn
+    sudo mkdir local
+    sudo mkdir logs
+    sudo chown -R hduser:hadoop /data
+    sudo chmod -R 777 /data
+    ```
+
+  * etc/hadoop/hdfs-site.xml
+
+    * namespace, namenode, datanode 저장 경로 지정
+
+    * 복제 계수 설정
+
+    * 블록 크기 설정
+
+      ```xml
+      <configuration>
+          <property>
+              <name>dfs.namenode.name.dir</name>
+              <value>file:///data/namenode</value>
+          </property>
+          <property>
+              <name>dfs.datanode.data.dir</name>
+              <value>file:///data/datanode</value>
+          </property>
+          <property>
+              <name>dfs.namenode.checkpoint.dir</name>
+              <value>file:///data/namesecondary</value>
+          </property>
+          <property>
+              <name>dfs.replication</name>
+              <value>2</value>
+          </property>
+          <property>
+              <name>dfs.blocksize</name>
+              <value>67108864</value>
+          </property>
+      </configuration>
+      ```
+
+  * etc/hadoop/yarn-site.xml
+
+    * nodemanager의 중간단계 파일 및 로그를 저장할 경로, yarn의 web-ui 주소 지정
+
+    * 컴퓨팅 환경이 부족한 파일럿 환경에서는 FairScheduler를 사용할 경우 병목현상이 발생해서 FifoScheduler로 전환
+
+      ```xml
+      <configuration>
+          <property>
+              <name>yarn.nodemanager.local-dirs</name>
+              <value>file:///data/yarn/local</value>
+          </property>
+          <property>
+              <name>yarn.nodemanager.log-dirs</name>
+              <value>file:///data/yarn/logs</value>
+          </property>
+          <property>
+              <name>yarn.resourcemanager.hostname</name>
+              <value>server01</value>
+          </property>
+          <property>
+              <name>yarn.resourcemanager.scheduler.class</name>
+              <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler</value>
+          </property>
+      </configuration>
+      ```
+
+  * etc/hadoop/mapred-site.xml
+
+    * 기본 맵리듀스 프레임워크 설정(yarn으로 설정)
+
+      ```xml
+      <configuration>
+          <property>
+              <name>mapreduce.framework.name</name>
+              <value>yarn</value>
+          </property>
+      </configuration>
+      ```
+
+  * etc/hadoop/hadoop-env.sh
+
+    * 여기서 JAVA_HOME설정을 안해주면 start-dfs.sh실행 시 java를 못찾아 실행실패
+
+      ```shell
+      # export JAVA_HOME이라고 된 곳을 uncomment하고, 지정된 자바 절대경로 씀
+      # ${JAVA_HOME}은 안됨
+      export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+      ```
+
+      
+
+  * 위의 절차까지 한 뒤 서버 복제
+
+    * server01, server02, server03
+
+  * /etc/hosts에서 각 서버의 IP, 호스트명 입력
+
+    * 127.0.0.1은 같은 호스트에서만 통신할 수 있으므로 다른 호스트와 통신할 수 있게 0.0.0.0으로 설정
+
+    ```shell
+    0.0.0.0 localhost server01
+    192.168.56.101 server01.hadoop.com server01
+    192.168.56.102 server02.hadoop.com server02
+    192.168.56.103 server03.hadoop.com server03
+    ```
+
+  * hostnamectl
+
+    ```shell
+    hostnamectl set-hostname server01
+    ```
+
+  * /etc/netplan/00-installer-config.yaml
+
+    * 고정 ip 설정
+
+      ```yaml
+      network:
+        ethernets:
+          enp0s3:
+            dhcp4: true
+          enp0s8:
+            dhcp4: false
+            addresses:
+              - 192.168.56.101/24
+            gateway4: 192.168.56.1
+            nameservers:
+              addresses: [8.8.8.8, 1.1.1.1]
+        version: 2
+      ```
+
+    * 설정반영
+
+      ```shell
+      sudo netplan apply
+      
+      ip addr
+      ip route
+      ```
+
+  * ssh연결
+
+    * hadoop 클러스터 서버들은 ssh를 이용해 통신하기 때문에 키생성 필요
+
+    * 모든 서버에서 다음 명령어 실행
+
+      ```shell
+      ssh-keygen
+      ssh-copy-id server01
+      ssh-copy-id server02
+      ssh-copy-id server03
+      ```
+
+  * namenode서버에서 hdfs 포맷 및 시작
+
+    * hadoop namenode -format은 2.x버전에서 쓰던 deprecated 된 명령어
+
+    ```shell
+    hdfs namenode -format
+    start-dfs.sh
+    hdfs dfsadmin -report
+    # stop-dfs.sh
+    ```
+
+    * namenode가 datanode를 인식못함
+
+      * 외부 서버에서 namenode 서버 9000번 포트에 접근하지 못하는 현상발생
+
+      * netstat으로 확인결과 9000번 포트는 127.0.0.1
+
+        * https://stackoverflow.com/questions/20778771/what-is-the-difference-between-0-0-0-0-127-0-0-1-and-localhost
+        * 127.0.0.1 : local-only interface
+        * 0.0.0.0 : listen on every available network interface
+        * 따라서 /etc/hosts에서 localhost 주소를 0.0.0.0으로 바꿔야 한다
+
+        ![image-20210927114619367](210927DataPipeline.assets/image-20210927114619367.png)
+
+    * http://server01.hadoop.com:9870/ 로 상태확인가능
+
+      ![image-20210927203657775](210927DataPipeline.assets/image-20210927203657775.png)
+
+  * namenode 서버에서 yarn실행
+
+    ```shell
+    start-yarn.sh
+    # stop-yarn.sh
+    ```
+
+    * http://server01.hadoop.com:8088/ 로 상태확인가능
+
+      ![image-20210927203632760](210927DataPipeline.assets/image-20210927203632760.png)
 
