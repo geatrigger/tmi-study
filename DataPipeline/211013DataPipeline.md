@@ -242,3 +242,131 @@
   ```
 
   ![image-20210929205128407](211013DataPipeline.assets/image-20210929205128407.png)
+
+# Flume 설치
+
+* https://flume.apache.org/releases/content/1.9.0/FlumeUserGuide.html
+
+* Flume 다운 및 압축풀기
+
+  ```shell
+  wget https://dlcdn.apache.org/flume/1.9.0/apache-flume-1.9.0-bin.tar.gz
+  # /usr/local/에 압축풀기
+  sudo tar xvzf apache-zookeeper-3.6.3-bin.tar.gz -C /usr/local/
+  ```
+
+* bashrc에 환경변수 설정
+
+  ```shell
+  export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  export FLUME_HOME=/usr/local/apache-flume-1.9.0-bin
+  export PATH=$PATH:$JAVA_HOME/bin:$FLUME_HOME/bin
+  ```
+
+* Flume 테스트
+
+  * https://flume.apache.org/releases/content/1.9.0/FlumeUserGuide.html
+
+  * conf/example.conf
+  
+    ```shell
+  # example.conf: A single-node Flume configuration
+    
+  # Name the components on this agent
+    a1.sources = r1
+    a1.sinks = k1
+    a1.channels = c1
+    
+  # Describe/configure the source
+    a1.sources.r1.type = netcat
+    a1.sources.r1.bind = localhost
+    a1.sources.r1.port = 44444
+    
+    # Describe the sink
+    a1.sinks.k1.type = logger
+    
+    # Use a channel which buffers events in memory
+    a1.channels.c1.type = memory
+    a1.channels.c1.capacity = 1000
+    a1.channels.c1.transactionCapacity = 100
+    
+    # Bind the source and sink to the channel
+    a1.sources.r1.channels = c1
+    a1.sinks.k1.channel = c1
+    ```
+  
+  * agent 실행
+  
+    ```shell
+  # $FLUME_HOME에서 실행
+  bin/flume-ng agent --conf conf --conf-file conf/example.conf --name a1 -Dflume.root.logger=INFO,console
+    
+    ```
+  
+  * 44444번 포트로 데이터 보내기
+  
+    ```shell
+    telnet localhost 44444
+    # 테스트
+    Hello world!
+    ABCDEFG
+    ```
+  
+    ![image-20211002171712862](211013DataPipeline.assets/image-20211002171712862.png)
+
+# Kafka 설치
+
+* Kafka 다운 및 압축풀기
+
+  * 9월에 3.0버전이 나왔지만 아직 잘 모르는 상황이므로 버전2의 최신판 2.8.1 사용결정
+
+  ```shell
+  wget https://dlcdn.apache.org/kafka/2.8.1/kafka_2.13-2.8.1.tgz
+  # /usr/local/에 압축풀기
+  sudo tar xvzf kafka_2.13-2.8.1.tgz -C /usr/local/
+  ```
+
+* bashrc에 환경변수 설정
+
+  * root 계정의 bashrc에 입력
+
+  ```shell
+  # kafka 하나만 고려
+  export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  export KAFKA_HOME=/usr/local/kafka_2.13-2.8.1
+  export PATH=$PATH:$JAVA_HOME/bin:$KAFKA_HOME/bin
+  # kafka, flume
+  export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  export FLUME_HOME=/usr/local/apache-flume-1.9.0-bin
+  export KAFKA_HOME=/usr/local/kafka_2.13-2.8.1
+  export PATH=$PATH:$JAVA_HOME/bin:$FLUME_HOME/bin:$KAFKA_HOME/bin
+  ```
+
+* Kafka 토픽생성
+
+  * zookeeper 켜져있어야 함
+
+  ```shell
+  # 카프카 시작
+  kafka-server-start.sh ../config/server.properties
+  # 토픽생성
+  kafka-topics.sh --create --zookeeper server02.hadoop.com:2181 --replication-factor 1 --partitions 1 --topic SmartCar-Topic
+  ```
+
+* Kafka 테스트
+
+  ```shell
+  kafka-console-producer.sh --broker-list server02.hadoop.com:9092 -topic test
+  kafka-console-consumer.sh --bootstrap-server server02.hadoop.com:9092 --topic test --partition 0 --from-beginning
+  ```
+
+  * 왼쪽 위는 zookeeper server 실행
+
+  * 왼쪽 아래는 kafka server 실행
+
+  * 오른쪽이 각각 producer, consumer
+
+    ![image-20211002165134691](211013DataPipeline.assets/image-20211002165134691.png)
+
+# 수집 기능 테스트
+
