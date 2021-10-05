@@ -35,7 +35,8 @@
   * Flume 설치
   * Kafka 설치
   * 수집 기능 테스트
-    * Flume -> Kafka
+    * 시뮬레이터->Flume
+    * 시뮬레이터->Flume -> Kafka
   * HBase 설치
   * Redis 설치
   * Storm 설치
@@ -270,26 +271,28 @@
   * conf/example.conf
   
     ```shell
-  # example.conf: A single-node Flume configuration
     
+    ```
+  # example.conf: A single-node Flume configuration
+  
   # Name the components on this agent
     a1.sources = r1
     a1.sinks = k1
     a1.channels = c1
-    
+  
   # Describe/configure the source
     a1.sources.r1.type = netcat
     a1.sources.r1.bind = localhost
     a1.sources.r1.port = 44444
-    
+  
     # Describe the sink
     a1.sinks.k1.type = logger
-    
+  
     # Use a channel which buffers events in memory
     a1.channels.c1.type = memory
     a1.channels.c1.capacity = 1000
     a1.channels.c1.transactionCapacity = 100
-    
+  
     # Bind the source and sink to the channel
     a1.sources.r1.channels = c1
     a1.sinks.k1.channel = c1
@@ -370,3 +373,159 @@
 
 # 수집 기능 테스트
 
+* 스마트카 로그 시뮬레이터 실행
+
+  ```shell
+  cd /home/pilot-pjt/working
+  # DriverLogMain.java CarLogMain.java
+  java -cp bigdata.smartcar.loggen-1.0.jar com.wikibook.bigdata.smartcar.loggen.DriverLogMain 20160101 3 &
+  java -cp bigdata.smartcar.loggen-1.0.jar com.wikibook.bigdata.smartcar.loggen.CarLogMain 20160101 3 &
+  # 시뮬레이터 동작 확인
+  tail -f /home/pilot-pjt/working/driver-realtime-log/SmartCarDriverInfo.log
+  cat /home/pilot-pjt/working/SmartCar/SmartCarStatusInfo_20160101.txt
+  ```
+
+* Flume 설정파일
+
+  * conf/SmartCar_Agent.conf
+
+    ```conf
+    SmartCar_Agent.sources  = SmartCarInfo_SpoolSource DriverCarInfo_TailSource
+    SmartCar_Agent.channels = SmartCarInfo_Channel DriverCarInfo_Channel
+    SmartCar_Agent.sinks    = SmartCarInfo_LoggerSink DriverCarInfo_KafkaSink
+    
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.type = spooldir
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.spoolDir = /home/pilot-pjt/working/car-batch-log
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.deletePolicy = immediate
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.batchSize = 1000
+    
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.interceptors = filterInterceptor
+    
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.interceptors.filterInterceptor.type = regex_filter
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.interceptors.filterInterceptor.regex = ^\\d{14}
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.interceptors.filterInterceptor.excludeEvents = false
+    
+    
+    SmartCar_Agent.channels.SmartCarInfo_Channel.type = memory
+    SmartCar_Agent.channels.SmartCarInfo_Channel.capacity  = 100000
+    SmartCar_Agent.channels.SmartCarInfo_Channel.transactionCapacity  = 10000
+    
+    
+    SmartCar_Agent.sinks.SmartCarInfo_LoggerSink.type = logger
+    
+    SmartCar_Agent.sources.SmartCarInfo_SpoolSource.channels = SmartCarInfo_Channel
+    SmartCar_Agent.sinks.SmartCarInfo_LoggerSink.channel = SmartCarInfo_Channel
+    
+    
+    
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.type = exec
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.command = tail -F /home/pilot-pjt/working/driver-realtime-log/SmartCarDriverInfo.log
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.restart = true
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.batchSize = 1000
+    
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.interceptors = filterInterceptor2
+    
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.interceptors.filterInterceptor2.type = regex_filter
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.interceptors.filterInterceptor2.regex = ^\\d{14}
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.interceptors.filterInterceptor2.excludeEvents = false
+    
+    SmartCar_Agent.sinks.DriverCarInfo_KafkaSink.type = org.apache.flume.sink.kafka.KafkaSink
+    SmartCar_Agent.sinks.DriverCarInfo_KafkaSink.topic = SmartCar-Topic
+    SmartCar_Agent.sinks.DriverCarInfo_KafkaSink.brokerList = server02.hadoop.com:9092
+    SmartCar_Agent.sinks.DriverCarInfo_KafkaSink.requiredAcks = 1
+    SmartCar_Agent.sinks.DriverCarInfo_KafkaSink.batchSize = 1000
+    
+    
+    SmartCar_Agent.channels.DriverCarInfo_Channel.type = memory
+    SmartCar_Agent.channels.DriverCarInfo_Channel.capacity= 100000
+    SmartCar_Agent.channels.DriverCarInfo_Channel.transactionCapacity = 10000
+    
+    
+    SmartCar_Agent.sources.DriverCarInfo_TailSource.channels = DriverCarInfo_Channel
+    SmartCar_Agent.sinks.DriverCarInfo_KafkaSink.channel = DriverCarInfo_Channel
+    ```
+
+* Flume 실행
+
+  ```shell
+  # $FLUME_HOME에서 실행
+  cd $FLUME_HOME
+  bin/flume-ng agent --conf conf --conf-file conf/SmartCar_Agent.conf --name SmartCar_Agent -Dflume.root.logger=INFO,console
+  ```
+
+* Kafka 실행(DriverCarInfo)
+
+  * consumer가 약 2초에 약100개의 데이터를 한꺼번에 읽는 모습 확인
+
+  * Flume 단계에서 interceptor를 거쳐 14자리 숫자로 시작하는 데이터만 전달됨
+
+    * 원본로그에 있는 메타데이터는 필터링함
+
+      * Driver Status Infomation,CarNum,AccStep,BrkStep,WheelStep,DirLightStep,Speed,AreaNum
+
+      ![image-20211003120201115](211013DataPipeline.assets/image-20211003120201115.png)
+
+  ```shell
+  # 주키퍼 시작
+  zkServer.sh start
+  zkServer.sh status
+  # 카프카 시작
+  kafka-server-start.sh $KAFKA_HOME/config/server.properties
+  # consumer
+  kafka-console-consumer.sh --bootstrap-server server02.hadoop.com:9092 --topic SmartCar-Topic --partition 0
+  ```
+
+  ![image-20211003115454495](211013DataPipeline.assets/image-20211003115454495.png)
+
+* Flume 로그 확인(SmartCarInfo)
+
+  ```shell
+  cp /home/pilot-pjt/working/driver-realtime-log/SmartCarDriverInfo.log /home/pilot-pjt/working/car-batch-log
+  # Dflume.root.logger=INFO,console 옵션으로 인해 flume을 실행한 곳에서 로그생성
+  ```
+
+  ![image-20211003115944226](211013DataPipeline.assets/image-20211003115944226.png)
+
+* 현재 프로세스 확인
+
+  ```shell
+  ps -ef | grep smartcar.log
+  ```
+
+  
+
+# HBase 설치
+
+* Hadoop과 compatibility 체크
+
+  * https://hbase.apache.org/book.html#hadoop
+
+  * https://programmerall.com/article/3793497690/
+
+  * https://kontext.tech/column/hadoop/624/install-hbase-in-wsl-pseudo-distributed-mode
+
+  * hadoop 3.3.0과 hbase 2.2.4
+
+  * hadoop 3.2.x와 hbase 2.3.x
+
+  * hadoop 3.2.0과 hbase 2.4.1
+
+  * https://docs.cloudera.com/documentation/enterprise/6/release-notes/topics/rg_cdh_63_packaging.html#cdh_630_packaging
+
+  * https://docs.cloudera.com/HDPDocuments/HDP3/HDP-3.1.5/release-notes/content/comp_versions.html
+
+  * hadoop 3.2, spark 3.1.2, hbase 2.3.x, hive 3.1.2, 
+
+    ![image-20211003224224482](211013DataPipeline.assets/image-20211003224224482.png)
+
+    ![image-20211003230425763](211013DataPipeline.assets/image-20211003230425763.png)
+
+    ​	![image-20211003230912263](211013DataPipeline.assets/image-20211003230912263.png)
+
+# Redis 설치
+
+# Storm 설치
+
+# Esper 설치
+
+# 적재 기능 테스트
