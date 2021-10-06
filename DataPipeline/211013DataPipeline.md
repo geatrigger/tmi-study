@@ -271,16 +271,14 @@
   * conf/example.conf
   
     ```shell
-    
-    ```
-  # example.conf: A single-node Flume configuration
+    # example.conf: A single-node Flume configuration
   
-  # Name the components on this agent
+    # Name the components on this agent
     a1.sources = r1
     a1.sinks = k1
     a1.channels = c1
   
-  # Describe/configure the source
+    # Describe/configure the source
     a1.sources.r1.type = netcat
     a1.sources.r1.bind = localhost
     a1.sources.r1.port = 44444
@@ -301,8 +299,8 @@
   * agent 실행
   
     ```shell
-  # $FLUME_HOME에서 실행
-  bin/flume-ng agent --conf conf --conf-file conf/example.conf --name a1 -Dflume.root.logger=INFO,console
+    # $FLUME_HOME에서 실행
+    bin/flume-ng agent --conf conf --conf-file conf/example.conf --name a1 -Dflume.root.logger=INFO,console
     
     ```
   
