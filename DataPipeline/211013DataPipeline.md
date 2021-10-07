@@ -519,6 +519,102 @@
     ![image-20211003230425763](211013DataPipeline.assets/image-20211003230425763.png)
 
     ​	![image-20211003230912263](211013DataPipeline.assets/image-20211003230912263.png)
+  
+* 다시 하둡 3.2.2 버전으로 설치
+
+  ```shell
+  # hduser 로그인
+  sudo rm -r /usr/local/hadoop-3.3.1/
+  sudo wget https://dlcdn.apache.org/hadoop/common/hadoop-3.2.2/hadoop-3.2.2.tar.gz
+  # /usr/local/에 압축풀기
+  sudo tar xvzf hadoop-3.2.2.tar.gz -C /usr/local/
+  # 사용자와 그룹 지정
+  sudo chown -R hduser:hadoop /usr/local/hadoop-3.2.2/
+  ```
+
+* 기존 파일들 삭제
+
+  ```shell
+  cd /data
+  ```
+
+  
+
+* bashrc
+
+  ```shell
+  # .bashrc 설정
+  export HADOOP_HOME=/usr/local/hadoop-3.2.2
+  ```
+
+* 하둡 xml 세팅
+
+  ```xml
+  <!-- etc/hadoop/core-site.xml -->
+  <configuration>
+      <property>
+          <name>fs.defaultFS</name>
+          <value>hdfs://server01:9000</value>
+      </property>
+  </configuration>
+  <!-- etc/hadoop/hdfs-site.xml -->
+  <configuration>
+      <property>
+          <name>dfs.namenode.name.dir</name>
+          <value>file:///data/namenode</value>
+      </property>
+      <property>
+          <name>dfs.datanode.data.dir</name>
+          <value>file:///data/datanode</value>
+      </property>
+      <property>
+          <name>dfs.namenode.checkpoint.dir</name>
+          <value>file:///data/namesecondary</value>
+      </property>
+      <property>
+          <name>dfs.replication</name>
+          <value>2</value>
+      </property>
+      <property>
+          <name>dfs.blocksize</name>
+          <value>67108864</value>
+      </property>
+  </configuration>
+  <!-- etc/hadoop/yarn-site.xml -->
+  <configuration>
+      <property>
+          <name>yarn.nodemanager.local-dirs</name>
+          <value>file:///data/yarn/local</value>
+      </property>
+      <property>
+          <name>yarn.nodemanager.log-dirs</name>
+          <value>file:///data/yarn/logs</value>
+      </property>
+      <property>
+          <name>yarn.resourcemanager.hostname</name>
+          <value>server01</value>
+      </property>
+      <property>
+          <name>yarn.resourcemanager.scheduler.class</name>
+          <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler</value>
+      </property>
+  </configuration>
+  <!-- etc/hadoop/mapred-site.xml -->
+  <configuration>
+      <property>
+          <name>mapreduce.framework.name</name>
+          <value>yarn</value>
+      </property>
+  </configuration>
+  ```
+
+* hadoop-env.sh
+
+  ```shell
+  export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  ```
+
+  
 
 # Redis 설치
 
