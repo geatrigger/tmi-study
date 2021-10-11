@@ -536,6 +536,7 @@
 
   ```shell
   cd /data
+  sudo chmod -R 755 /data
   ```
 
   
@@ -612,11 +613,236 @@
 
   ```shell
   export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  # 하둡 참고
+  # http://torlone.dia.uniroma3.it/bigdata/E1-Hadoop.pdf
   ```
 
+* HBase 다운
+
+  ```shell
+  # hduser 로그인
+  sudo wget https://dlcdn.apache.org/hbase/2.3.6/hbase-2.3.6-bin.tar.gz
+  # /usr/local/에 압축풀기
+  sudo tar xvzf hbase-2.3.6-bin.tar.gz -C /usr/local/
+  # 사용자와 그룹 지정
+  sudo chown -R hduser:hadoop /usr/local/hbase-2.3.6
+  ```
+
+* .bashrc
+
+  ```shell
+  export HBASE_HOME=/usr/local/hbase-2.3.6
+  export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HBASE_HOME/bin
+  ```
+
+* conf/hbase-env.sh
+
+  ```shell
+  export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  ```
+
+* Hadoop이 정상적으로 실행되지 않을 때
+
+  * https://hadoop.apache.org/docs/r3.2.2/hadoop-project-dist/hadoop-common/ClusterSetup.html
+  * namenode format
+  * data 디렉토리 비우기
+  * namenode, datanode 따로따로 실행
+
+* Yarn이 정상적으로 실행되지 않을 때
+
+  * resource manager, node manager 따로따로 실행
+
+* conf/hbase-site.xml
+
+  * cluster모드로 사용하기 위해 hbase.cluster.distributed 설정
+  * server02의 zookeeper 연결
+
+  ```xml
+  <configuration>
+    <property>
+      <name>hbase.cluster.distributed</name>
+      <value>true</value>
+    </property>
+    <property>
+      <name>hbase.tmp.dir</name>
+      <value>./tmp</value>
+    </property>
+    <property>
+      <name>hbase.rootdir</name>
+      <value>hdfs://server01:9000/hbase</value>
+    </property>
+    <property>
+      <name>hbase.unsafe.stream.capability.enforce</name>
+      <value>false</value>
+    </property>
+    <property>
+      <name>hbase.zookeeper.quorum</name>
+      <value>server02.hadoop.com</value>
+    </property>
+  </configuration>
   
+  ```
+
+* regionservers
+
+  * regionserver를 실행할 호스트들 설정
+
+  ```shell
+  server01.hadoop.com
+  server02.hadoop.com
+  server03.hadoop.com
+  ```
+
+* hbase 오류
+
+  * zookeeper와 통신실패
+  * hduser, zkuser로 사용자 이름이 달라서 안되는 것 같음
+  * 다른 날 다시 해보니 됨
+  
+* server02, server03 세팅
+
+  * 똑같이 hbase 설치
+
+  * conf 디렉토리 복사
+
+    ```shell
+    scp -r conf/ hduser@server02.hadoop.com:/usr/local/hbase-2.3.6
+    scp -r conf/ hduser@server03.hadoop.com:/usr/local/hbase-2.3.6
+    ```
+
+* hbase 시작
+
+  ```shell
+  start-hbase.sh
+  stop-hbase.sh
+  ```
+
+* hbase 사용
+
+  * shell
+
+    ```shell
+    hbase shell
+    ```
+
+  * table 생성
+
+    * table 이름, column family 이름
+
+    ```shell
+    create 'test', 'cf'
+    ```
+
+  * table 나열
+
+    ```shell
+    list 'test'
+    describe 'test'
+    ```
+
+  * put data
+
+    ```shell
+    put 'test', 'row1', 'cf:a', 'value1'
+    put 'test', 'row2', 'cf:b', 'value2'
+    put 'test', 'row3', 'cf:c', 'value3'
+    ```
+
+  * scan table
+
+    ```shell
+    scan 'test'
+    ```
+
+  * get row data
+
+    ```shell
+    get 'test', 'row1'
+    ```
+
+  * table 삭제
+
+    ```shell
+    # table 삭제나 변형시 disable을 해줘야 한다
+    disable 'test'
+    drop 'test'
+    ```
+
+  * 나가기
+
+    ```shell
+    quit
+    ```
+
+  * web UI
+
+    ![image-20211011133904976](211013DataPipeline.assets/image-20211011133904976.png)
+
+    ![image-20211011134218422](211013DataPipeline.assets/image-20211011134218422.png)
+
+    ![image-20211011134255246](211013DataPipeline.assets/image-20211011134255246.png)
+
+    ![image-20211011134531132](211013DataPipeline.assets/image-20211011134531132.png)
 
 # Redis 설치
+
+* Redis란
+
+  * 분산 캐시 시스템
+  * 대규모 데이터 관리 가능
+  * 키 값 형식의 데이터 구조를 분산 서버상의 메모리에 저장하여 고성능의 응답 속도 보장
+
+* Redis 다운 및 설치
+
+  * server02
+  * https://redis.io/topics/quickstart
+
+  ```shell
+  sudo wget https://download.redis.io/releases/redis-6.2.6.tar.gz
+  # /usr/local/에 압축풀기
+  sudo tar xvzf redis-6.2.6.tar.gz -C /usr/local/
+  # 사용자와 그룹 지정
+  sudo chown -R hduser:hadoop /usr/local/redis-6.2.6
+  # build
+  sudo apt install make
+  sudo apt-get install pkg-config
+  
+  cd /usr/local/redis-6.2.6
+  # 실수로 전에 make하여 쓸데없는 파일이 생겼을 때
+  # make distclean
+  make
+  # make test를 하고 싶으면(build가 제대로 되었는지 확인)
+  # sudo apt-get install tcl
+  ```
+
+  ![image-20211011153553770](211013DataPipeline.assets/image-20211011153553770.png)
+
+* .bashrc
+
+  ```shell
+  export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  export HADOOP_HOME=/usr/local/hadoop-3.2.2
+  export HBASE_HOME=/usr/local/hbase-2.3.6
+  export REDIS_HOME=/usr/local/redis-6.2.6
+  export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HBASE_HOME/bin:$REDIS_HOME/src
+  ```
+
+* redis 실행
+
+  ```shell
+  # 1번 창
+  redis-server
+  # redis-server /etc/redis.conf
+  # 2번 창
+  redis-cli
+  ping
+  set mykey somevalue
+  get mykey
+  ```
+
+  ![image-20211011154827100](211013DataPipeline.assets/image-20211011154827100.png)
+
+  ![image-20211011154857434](211013DataPipeline.assets/image-20211011154857434.png)
 
 # Storm 설치
 
