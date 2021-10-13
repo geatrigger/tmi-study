@@ -846,6 +846,25 @@
 
 # Storm 설치
 
+* Storm 특징
+
+  * 데이터를 실시간으로 다루기 위해 모든 데이터를 인메모리상에서 분산 병렬 처리한다
+  * 분리, 정제, 통합, 집계 기능 제공
+
+* Storm 설치
+
+  ```shell
+  sudo wget https://dlcdn.apache.org/storm/apache-storm-2.3.0/apache-storm-2.3.0.tar.gz
+  sudo tar xvzf apache-storm-2.3.0.tar.gz -C /usr/local/
+  sudo chown -R hduser:hadoop /usr/local/apache-storm-2.3.0
+  ```
+
+  
+
+* Storm 실행
+  
+  * Zookeeper가 실행되어 있어야 함
+
 # Esper 설치
 
 # 적재 기능 테스트
