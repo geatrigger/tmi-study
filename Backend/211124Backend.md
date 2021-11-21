@@ -129,15 +129,42 @@
 * 검색엔진연동
 * 웹서버
   * Java HashMap 작동방식
-  * Servlet기반 Java웹서버
+  
+    * https://ysjee141.github.io/blog/jdk/java-hashmap/
+    * Hash
+    * 내부구조는 배열로 되어있고, 해시함수를 이용해 hashcode() % M값을 인덱스로 삼는다
+    * 해시함수를 쓸 때 충돌하면 Separate Chaining을 사용해 LinkedList로 관리하고, 값이 8개이상이면 Tree로 변경하여 관리한다
+  
+  * 웹서버, WAS 구성요소
+  
+    * https://codevang.tistory.com/191
+  
+    * https://losskatsu.github.io/it-infra/webserver/#%ED%86%B0%EC%BA%A3tomcat
+  
+    * 웹 어플리케이션 : JSP, Servlet
+  
+    * 웹 서버 : IIS, Apache, Nginx
+  
+    * WAS : Tomcat, Jeus
+  
+      ![img](211124Backend.assets/server1.png)
+  
+      ![img](211124Backend.assets/server2.png)
+  
   * 백엔드 개발 프레임워크 Netty/Spring
+  
   * Rest-assured와 Spring MVC Test Integration, JUnit
+  
   * 스레드풀(병렬처리)
+  
   * 비동기/동기
+  
   * REST API(HATEOAS)
+  
   * CRUD API
+  
   * GraphQL
-  * Nginx, Tomcat, JVM
+  
   * JVM, 커널 파라미터, 웹 서버 튜닝
 * 테스트
   * CI
